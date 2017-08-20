@@ -1,0 +1,97 @@
+'@type': "SoftwareComponentType"
+createdDate: "2017-05-07T13:00:32.078Z"
+lastUpdated: "2017-08-20T01:58:32.900Z"
+id: "Software.LIAgentWin"
+name: "Log Insight Windows Agent"
+description: "Installs the Log Insight agent for Windows on a given machine. This\
+  \ software component downloads the Windows agent directly from the Log Insight node\
+  \ or cluster and installs it locally."
+publishStatus: "PUBLISHED"
+publishStatusName: "Published"
+schema:
+  fields:
+  - id: "host"
+    label: "Container"
+    description: ""
+    dataType:
+      type: "ref"
+      componentTypeId: "com.vmware.csp.iaas.blueprint.service"
+      classId: "Infrastructure.Machine.Schema"
+      label: "Machine"
+    state:
+      dependencies: []
+      facets:
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+      - type: "visible"
+        value:
+          type: "constantClause"
+          value:
+            type: "boolean"
+            value: false
+      - type: "internal"
+        value:
+          type: "constantClause"
+          value:
+            type: "boolean"
+            value: true
+    isMultiValued: false
+  - id: "serverhost"
+    label: "serverhost"
+    description: "Which Log Insight server to use to download agent and register itself."
+    dataType:
+      type: "primitive"
+      typeId: "STRING"
+    state:
+      dependencies: []
+      facets:
+      - type: "mandatory"
+        value:
+          type: "constant"
+          value:
+            type: "boolean"
+            value: true
+      - type: "derivedValue"
+        value:
+          type: "constant"
+          value:
+            type: "string"
+            value: "loginsight.domain.com"
+    isMultiValued: false
+containerFieldId: "host"
+lifecycleTasks:
+- createdDate: "2017-05-07T13:00:32.080Z"
+  lastUpdated: "2017-08-20T01:58:32.900Z"
+  script:
+    scriptContent: "#$app = Get-WmiObject -Class Win32_Product `\n #             \
+      \       -Filter \"Name = 'VMware vRealize Log Insight Agent'\"\n#$app.Uninstall()"
+    isRebootAfter: false
+    scriptTypeId: "powershell"
+  taskDescriptorRef:
+    id: "TEARDOWN"
+    label: "Uninstall"
+- createdDate: "2017-05-07T13:00:32.081Z"
+  lastUpdated: "2017-08-20T01:58:32.900Z"
+  script:
+    scriptContent: "add-type @\"\n    using System.Net;\n    using System.Security.Cryptography.X509Certificates;\n\
+      \    public class TrustAllCertsPolicy : ICertificatePolicy {\n        public\
+      \ bool CheckValidationResult(\n            ServicePoint srvPoint, X509Certificate\
+      \ certificate,\n            WebRequest request, int certificateProblem) {\n\
+      \            return true;\n        }\n    }\n\"@\n[System.Net.ServicePointManager]::CertificatePolicy\
+      \ = New-Object TrustAllCertsPolicy\n#################################\n###Download\
+      \ agent\nwget \"https://$serverhost/api/v1/agent/packages/types/msi\" -outfile\
+      \ \"C:/liagent.msi\"\n###Install agent\nC:/liagent.msi /quiet SERVERHOST=$serverhost\n\
+      ###Wait until services running\nStart-Sleep 5\n###Verify agent running\n$liservicename\
+      \ = Get-Service -Name *LogInsight*\nif ($liservicename.Status -ne \"Running\"\
+      ){\n\tWrite-Output \"Log Insight agent is not running.\"\n\texit 1}\nelse{\n\
+      \tWrite-Output \"Log Insight agent is installed!\"\n\tdel C:/liagent.msi\n\t\
+      exit 0}"
+    isRebootAfter: false
+    scriptTypeId: "powershell"
+  taskDescriptorRef:
+    id: "INSTALL"
+    label: "Install"

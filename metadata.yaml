@@ -1,0 +1,9 @@
+name: "auto-generated-pkg-f897b8f7-f8bb-444a-b803-1825466313a2"
+productVersion: "7.3.0-SNAPSHOT"
+data:
+- locator: "software-component/Software.LIAgentWin.yaml"
+  name: "Log Insight Windows Agent"
+  description: "Installs the Log Insight agent for Windows on a given machine. This\
+    \ software component downloads the Windows agent directly from the Log Insight\
+    \ node or cluster and installs it locally."
+exportTime: "2017-08-20T01:59:07.970Z"
